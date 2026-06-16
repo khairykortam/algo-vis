@@ -7,6 +7,7 @@
     <title>Sorting</title>
 </head>
 <body>
+    
     <div id="inputs">
     <label for="select-algorithm"> Select Algorithm
     <select id="select-algorithm">
@@ -16,11 +17,15 @@
         <option value="QuickSort">Quick Sort</option>
     </select>
     </label>
-    <label for="range">
-        <input id="slider" name="slider" type="range">
+    <label for="slider"> Size
+        <input id="slider" name="slider" type="range" min="10" max="300" value="100">
     </label>
     <button id="execute">Execute</button>
+    <button id="rand">Shuffel</button>
+    <!-- <button id="halt">Halt</button> -->
+    <label id="timer-label">Time Taken: <span id="timer">--</span></label>
     </div>
+
     <canvas id="canvas"></canvas>
     <script src="./index.js"></script>
 </body>

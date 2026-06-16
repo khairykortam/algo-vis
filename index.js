@@ -4,6 +4,11 @@ canvas.height = window.innerHeight;
 const context = canvas.getContext("2d");
 document.body.style.overflow = 'hidden';
 const slider = document.getElementById("slider");
+const randBtn = document.getElementById('rand');
+const timer = document.getElementById('timer');
+// const halt = document.getElementById('halt');
+let startTime = null;
+let interval = null;
 const selectAlgorithm = document.getElementById("select-algorithm");
 const button = document.getElementById("execute");
 let algo = "";
@@ -35,21 +40,19 @@ function drawBar(x, y, width, height, color) {
 
 function drawArray(arr, highlightIndex = -1) {
   context.clearRect(0, 0, canvas.width, canvas.height);
-  const maxVal = Math.max(...arr, 1);
   const barWidth = canvas.width / arr.length;
   let xPos = (canvas.width - arr.length * barWidth) / 2;
   const yPos = canvas.height;
   arr.forEach((element, index) => {
     const color = index === highlightIndex ? "purple" : "blue";
-    const height = (element / maxVal) * canvas.height;
+    const height = (element / Math.max(...arr, 1)) * canvas.height;
     drawBar(xPos, yPos, barWidth, height, color);
     xPos += barWidth;
   });
 }
 function createArray(size) {
-  const s = parseInt(size) || 0;
-  const mainArray = Array.from({ length: s }, () =>
-    Math.floor(Math.random() * s),
+  const mainArray = Array.from({ length: size }, () =>
+    Math.floor(Math.random() * size),
   );
   drawArray(mainArray, -1);
   return mainArray;
@@ -87,7 +90,6 @@ async function quicky(array, start, end) {
       await sleep(10);
       drawArray(array, j);
     }
-    // place pivot
     const tmp = array[i + 1];
     array[i + 1] = array[end];
     array[end] = tmp;
@@ -98,6 +100,29 @@ async function quicky(array, start, end) {
   }
   await sleep(6);
   drawArray(array, -1);
+}
+function startTimer(){
+  startTime = performance.now();
+  timer.textContent = '0.00ms';
+  interval = setInterval(()=> {
+    const passed = performance.now()-startTime;
+    timer.innerHTML = passed.toFixed(2) + 'ms';
+  }, 10);
+}
+function endTimer(){
+  if(interval) clearInterval(interval);interval =0;
+  const passed = performance.now() - startTime;
+  if(startTime==null){
+    timer.textContent = '--';return;
+  }
+  startTime = null
+}
+function DisableMalFunction(disabled){
+  if(slider) slider.disabled = disabled;
+  if(randBtn) randBtn.disabled = disabled;
+  if(selectAlgorithm) selectAlgorithm.disabled = disabled;
+  if(button) button.disabled = disabled; 
+
 }
 async function merge(array, start, mid, end) {
   let left = start;
@@ -128,15 +153,24 @@ async function el_merge_el_gededa(array, start, end) {
 }
 
 (() => {
+  
   array = createArray(100);
   slider.addEventListener("input", (event) => {
-    array = createArray(event.target.value);
+    array = createArray(parseInt(event.target.value));
   });
   selectAlgorithm.addEventListener("change", (event) => {
     algo = event.target.value;
   });
+  randBtn.addEventListener("click", ()=> {
+    array = createArray(parseInt(slider.value,10));
+  })
   button.addEventListener("click", async () => {
+    if(!selectAlgorithm.value) return;
     temp = new Array(array.length);
+
+    DisableMalFunction(true);
+    startTimer();
+    try {
     switch (algo) {
       case "BubbleSort":
         await bubbles(array);
@@ -150,6 +184,11 @@ async function el_merge_el_gededa(array, start, end) {
         await el_merge_el_gededa(array, 0, array.length - 1);
         break;
     }
+  }
+  finally {
+    DisableMalFunction(false);
+    endTimer();
     drawArray(array, -1);
+  }
   });
 })();
